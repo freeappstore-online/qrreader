@@ -1,0 +1,13 @@
+{
+  "name": "qr-reader-web",
+  "private": true,
+  "packageManager": "pnpm@10.30.3",
+  "engines": { "node": ">=22" },
+  "pnpm": { "onlyBuiltDependencies": ["esbuild"] },
+  "scripts": {
+    "dev": "pnpm --filter @qr-reader-web/web dev",
+    "build": "pnpm --filter @qr-reader-web/web build",
+    "preview": "pnpm --filter @qr-reader-web/web preview",
+    "typecheck": "pnpm --filter @qr-reader-web/web exec tsc -b"
+  }
+}
