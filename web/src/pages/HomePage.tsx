@@ -88,14 +88,14 @@ export default function HomePage() {
   }
 
   return (
-    <div className="flex flex-col gap-3 sm:gap-6 flex-1 overflow-y-auto p-3 sm:p-6">
+    <div className="flex flex-col gap-3 sm:gap-6 flex-1 overflow-y-auto p-7 sm:p-6">
       <HeaderComponent />
       <main className="w-full">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Left Column */}
           <div className="space-y-6">
             {/* Mode Selector */}
-            <ModeSelector onSelectMode={handleModeSelect} />
+            <ModeSelector selectedMode={mode ?? 'camera'} onSelectMode={handleModeSelect} />
 
             {/* Scanner Area */}
             <ScannerArea

@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
-import type { ChangeEvent } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import type { ChangeEvent, DragEvent } from 'react'
 import QRScanner from './qr/QRScanner'
-import { Camera, Upload, Play, StopCircle, Info } from 'lucide-react'
+import { Camera, Upload, Play, StopCircle, Info, Image } from 'lucide-react'
 
 interface ScannerAreaProps {
   mode: 'camera' | 'image' | null
@@ -36,6 +36,7 @@ export default function ScannerArea({
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [previewName, setPreviewName] = useState<string | null>(null)
+  const [isDragActive, setIsDragActive] = useState(false)
 
   const revokePreviewUrl = (url: string | null) => {
     if (url) {
@@ -43,20 +44,88 @@ export default function ScannerArea({
     }
   }
 
+  const handleSelectedFile = useCallback(
+    (file: File) => {
+      const newUrl = URL.createObjectURL(file)
+      setPreviewUrl((currentUrl) => {
+        revokePreviewUrl(currentUrl)
+        return newUrl
+      })
+      setPreviewName(file.name)
+      onImageSelect(file)
+    },
+    [onImageSelect],
+  )
+
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) {
       return
     }
 
-    const newUrl = URL.createObjectURL(file)
-    setPreviewUrl((currentUrl) => {
-      revokePreviewUrl(currentUrl)
-      return newUrl
-    })
-    setPreviewName(file.name)
-    onImageSelect(file)
+    handleSelectedFile(file)
   }
+
+  const handleDrop = (event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault()
+    event.stopPropagation()
+    setIsDragActive(false)
+
+    const file = event.dataTransfer?.files?.[0]
+    if (!file) {
+      return
+    }
+
+    if (!file.type.startsWith('image/')) {
+      onClearImageError()
+      return
+    }
+
+    handleSelectedFile(file)
+  }
+
+  const handleDragOver = (event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault()
+    event.dataTransfer.dropEffect = 'copy'
+    setIsDragActive(true)
+  }
+
+  const handleDragLeave = (event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault()
+    setIsDragActive(false)
+  }
+
+  const handlePaste = useCallback(
+    (event: ClipboardEvent) => {
+      const items = event.clipboardData?.items
+      if (!items) {
+        return
+      }
+
+      for (const item of Array.from(items)) {
+        if (item.kind === 'file' && item.type.startsWith('image/')) {
+          const file = item.getAsFile()
+          if (file) {
+            event.preventDefault()
+            handleSelectedFile(file)
+            return
+          }
+        }
+      }
+    },
+    [handleSelectedFile],
+  )
+
+  useEffect(() => {
+    if (mode !== 'image') {
+      return undefined
+    }
+
+    window.addEventListener('paste', handlePaste as EventListener)
+    return () => {
+      window.removeEventListener('paste', handlePaste as EventListener)
+    }
+  }, [mode, handlePaste])
 
   useEffect(() => {
     return () => {
@@ -170,11 +239,40 @@ export default function ScannerArea({
         </div>
       </div>
 
-      <div data-slot="body" className="p-4 sm:p-6">
+      <div
+        data-slot="body"
+        className="p-4 sm:p-6"
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+      >
         <div className="space-y-4">
-          {renderInfoCallout('Select a QR code image file to scan.')}
+          {renderInfoCallout('Select, drag, or paste a QR code image file to scan.')}
 
           <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
+
+          {!previewUrl ? (
+            <div
+              className={`w-full min-h-[180px] rounded-lg border border-dashed border-[var(--line)] p-7 text-center transition-all ${
+                isDragActive ? 'border-[var(--accent)] bg-[color:var(--accent)/5]' : ''
+              }`}
+            >
+              <div className="flex flex-col items-center justify-center h-[200px] p-8">
+                <div className="space-y-4 text-center">
+                  <div className="flex items-center justify-center">
+                    <div className="p-4 rounded-lg bg-[color:var(--sky-soft)]/20">
+                      <Image className="text-[var(--accent)] size-9" />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-2xl font-semibold mb-2">Drop an image here</p>
+                  <p className="text-sm text-[var(--muted)]">or press Ctrl+V / Cmd+V to paste</p>
+                </div>
+              </div>
+            </div>
+          ) : null}
 
           {previewUrl ? (
             <div className="rounded-lg overflow-hidden border border-[var(--line)] bg-[var(--paper-deep)]">
@@ -186,7 +284,7 @@ export default function ScannerArea({
                 <button
                   type="button"
                   onClick={handleClosePreview}
-                  className="rounded-md px-2 py-1 text-xs font-medium text-[var(--muted)] bg-[var(--line)] hover:bg-[var(--line-strong)] transition-colors"
+                 className="rounded-md px-2 py-1 text-xs font-medium text-[var(--muted)] bg-[var(--line)] hover:bg-[var(--line-strong)] transition-colors"
                 >
                   Close
                 </button>
@@ -211,7 +309,7 @@ export default function ScannerArea({
             <span>Choose File</span>
           </button>
         </div>
-      </div>
+      </div >
     </div>
   )
 }
