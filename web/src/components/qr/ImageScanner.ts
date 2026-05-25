@@ -3,9 +3,35 @@ import { useCallback, useState } from 'react'
 
 interface UseImageScannerOptions {
   onResult: (text: string) => void
+  onError?: (message: string) => void
 }
 
-export function useImageScanner({ onResult }: UseImageScannerOptions) {
+function readFileAsDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      const result = reader.result
+      if (typeof result === 'string') {
+        resolve(result)
+      } else {
+        reject(new Error('Failed to read image file.'))
+      }
+    }
+    reader.onerror = () => reject(reader.error)
+    reader.readAsDataURL(file)
+  })
+}
+
+function loadImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const image = new Image()
+    image.onload = () => resolve(image)
+    image.onerror = () => reject(new Error('Failed to load image.'))
+    image.src = src
+  })
+}
+
+export function useImageScanner({ onResult, onError }: UseImageScannerOptions) {
   const [isScanning, setIsScanning] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -15,41 +41,30 @@ export function useImageScanner({ onResult }: UseImageScannerOptions) {
       setError(null)
 
       try {
-        const reader = new FileReader()
-        reader.onload = async (event) => {
-          try {
-            const img = new Image()
-            img.onload = async () => {
-              try {
-                const codeReader = new BrowserMultiFormatReader()
-                const result = await codeReader.decodeFromImageElement(img)
-                if (result) {
-                  onResult(result.getText())
-                } else {
-                  setError('No QR code found in the image.')
-                }
-              } catch (err) {
-                setError('Failed to read QR code from image.')
-                console.error(err)
-              } finally {
-                setIsScanning(false)
-              }
-            }
-            img.src = event.target?.result as string
-          } catch (err) {
-            setError('Failed to process image.')
-            setIsScanning(false)
-            console.error(err)
-          }
+        const dataUrl = await readFileAsDataUrl(file)
+        const image = await loadImage(dataUrl)
+        const codeReader = new BrowserMultiFormatReader()
+        const result = await codeReader.decodeFromImageElement(image)
+
+        if (!result?.getText()) {
+          throw new Error('No QR code found in the image.')
         }
-        reader.readAsDataURL(file)
+
+        onResult(result.getText())
       } catch (err) {
-        setError('Failed to read file.')
-        setIsScanning(false)
+        const message =
+          err instanceof Error && err.message
+            ? err.message
+            : 'Failed to read QR code from image.'
+
+        setError(message)
+        onError?.(message)
         console.error(err)
+      } finally {
+        setIsScanning(false)
       }
     },
-    [onResult],
+    [onError, onResult],
   )
 
   const clearError = useCallback(() => {

@@ -3,10 +3,21 @@ import { useEffect, useRef } from 'react'
 
 interface Props {
   onResult: (text: string) => void
+  onError?: (message: string) => void
   enabled?: boolean
 }
 
-export default function QRScanner({ onResult, enabled = true }: Props) {
+const getCameraErrorMessage = (error: unknown) => {
+  const errorName = error instanceof Error ? error.name : String(error)
+
+  if (errorName === 'NotAllowedError' || errorName === 'PermissionDeniedError') {
+    return 'Camera access was denied. Please allow camera permission to scan.'
+  }
+
+  return 'Failed to start camera scanner. Please check your camera permissions and try again.'
+}
+
+export default function QRScanner({ onResult, onError, enabled = true }: Props) {
   const videoRef = useRef<HTMLVideoElement | null>(null)
 
   useEffect(() => {
@@ -33,6 +44,7 @@ export default function QRScanner({ onResult, enabled = true }: Props) {
         )
       } catch (error) {
         console.error(error)
+        onError?.(getCameraErrorMessage(error))
       }
     }
 
@@ -41,12 +53,20 @@ export default function QRScanner({ onResult, enabled = true }: Props) {
     return () => {
       controls?.stop()
     }
-  }, [onResult, enabled])
+  }, [enabled, onError, onResult])
 
   return (
-    <video
-      ref={videoRef}
-      className="h-full w-full object-cover"
-    />
+    <div className="relative h-full w-full">
+      <video
+        ref={videoRef}
+        className="h-full w-full object-cover"
+      />
+
+      {enabled ? (
+        <div className="qr-shaded-region pointer-events-none">
+          <div className="cutout" />
+        </div>
+      ) : null}
+    </div>
   )
 }
