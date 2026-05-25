@@ -194,3 +194,33 @@ a:focus-visible {
 }
 
 } /* end @layer base */
+
+/* QR scanner shaded region overlay */
+.qr-shaded-region {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.qr-shaded-region .cutout {
+  width: min(70%, 440px);
+  aspect-ratio: 1 / 1;
+  border-radius: 12px;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.56);
+  -webkit-box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.56);
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  box-sizing: content-box;
+}
+
+.qr-shaded-region .cutout::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3) inset;
+  pointer-events: none;
+}
