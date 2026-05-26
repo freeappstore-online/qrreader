@@ -1,9 +1,18 @@
 import { useState } from 'react'
-import { AlertTriangle, ScanLine, Copy } from 'lucide-react'
+import { AlertTriangle, ScanLine, Copy, ExternalLink } from 'lucide-react'
 
 interface ResultsComponentProps {
   result: string
   error?: string | null
+}
+
+const isValidUrl = (string: string): boolean => {
+  try {
+    new URL(string)
+    return true
+  } catch {
+    return false
+  }
 }
 
 export default function ResultsComponent({ result, error }: ResultsComponentProps) {
@@ -13,6 +22,7 @@ export default function ResultsComponent({ result, error }: ResultsComponentProp
   const emptyStateDescription = hasError
     ? 'Try scanning another QR code.'
     : 'Select a mode and start scanning to see results here.'
+  const isUrl = isValidUrl(result)
 
   const handleCopyResult = async () => {
     try {
@@ -22,6 +32,10 @@ export default function ResultsComponent({ result, error }: ResultsComponentProp
     } catch {
       setCopied(false)
     }
+  }
+
+  const handleOpenLink = () => {
+    window.open(result, '_blank', 'noopener,noreferrer')
   }
 
   return (
@@ -67,6 +81,17 @@ export default function ResultsComponent({ result, error }: ResultsComponentProp
                 <Copy className="w-4 h-4" />
                 {copied ? 'Copied!' : 'Copy Result'}
               </button>
+
+              {isUrl && (
+                <button
+                  type="button"
+                  onClick={handleOpenLink}
+                  className="inline-flex items-center gap-2 rounded-md bg-[var(--accent)] px-3 py-2 text-sm font-medium text-[var(--paper)] transition hover:bg-[color:var(--accent-deep)] active:bg-[color:var(--accent-deep)/0.85] ml-2"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  Open Link
+                </button>
+              )}
             </section>
           ) : (
             <div className="flex flex-col items-center justify-center py-8 text-center">
