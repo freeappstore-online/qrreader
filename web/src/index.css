@@ -99,8 +99,6 @@ html {
 
 body {
   min-height: 100dvh;
-  -webkit-user-select: none;
-  user-select: none;
   background:
     radial-gradient(circle at top left, var(--bg-blob-1), transparent 32%),
     radial-gradient(circle at top right, var(--bg-blob-2), transparent 30%),
