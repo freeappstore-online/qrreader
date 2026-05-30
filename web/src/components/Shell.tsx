@@ -23,16 +23,27 @@ export function Shell({ children }: ShellProps) {
                 QR Reader
               </div>
 
-              <div className="mt-auto text-[0.65rem] text-[var(--muted)]">
-                Part of{' '}
+              <div className="mt-auto space-y-3">
                 <a
-                  href="https://freeappstore.online"
+                  href="https://qrcode.freeappstore.online"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="underline hover:text-[var(--ink)]"
+                  className="flex items-center gap-2 rounded-xl border border-[var(--line)] bg-[var(--glass)] px-3 py-2.5 text-xs font-medium text-[var(--ink)] transition hover:bg-[var(--glass-strong)] hover:border-[var(--line-strong)]"
                 >
-                  FreeAppStore
+                  <span className="text-base leading-none">✦</span>
+                  QR Code Generator
                 </a>
+                <div className="text-[0.65rem] text-[var(--muted)]">
+                  Part of{' '}
+                  <a
+                    href="https://freeappstore.online"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline hover:text-[var(--ink)]"
+                  >
+                    FreeAppStore
+                  </a>
+                </div>
               </div>
             </aside>
 
@@ -45,15 +56,23 @@ export function Shell({ children }: ShellProps) {
       </div>
 
       {/* Mobile dock */}
-      <nav className="flex-shrink-0 border-t border-[var(--line)] bg-[var(--dock)]/92 px-2 pb-[calc(env(safe-area-inset-bottom)+0.25rem)] pt-1 backdrop-blur-2xl lg:hidden">
-        <div className="mx-auto grid max-w-xs grid-cols-1 py-2">
+      <nav className="flex-shrink-0 border-t border-[var(--line)] bg-[var(--dock)]/92 px-4 pb-[calc(env(safe-area-inset-bottom)+0.25rem)] pt-1 backdrop-blur-2xl lg:hidden">
+        <div className="mx-auto flex items-center justify-between py-2">
           <a
             href="https://freeappstore.online"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-center text-[0.65rem] font-bold uppercase tracking-[0.14em] text-[var(--muted)]"
+            className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-[var(--muted)]"
           >
             Part of FreeAppStore
+          </a>
+          <a
+            href="https://qrcode.freeappstore.online"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[0.65rem] font-semibold text-[var(--accent)] hover:text-[var(--accent-deep)]"
+          >
+            QR Generator →
           </a>
         </div>
       </nav>

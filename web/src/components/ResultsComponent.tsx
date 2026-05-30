@@ -64,6 +64,22 @@ export default function ResultsComponent({ result, error }: ResultsComponentProp
             </div>
           )}
 
+          {!result && !hasError && (
+            <div className="text-center pt-2 pb-1">
+              <p className="text-xs text-[var(--muted)]">
+                Need to create a QR code?{' '}
+                <a
+                  href="https://qrcode.freeappstore.online"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[var(--accent)] hover:text-[var(--accent-deep)] font-medium"
+                >
+                  Try QR Generator →
+                </a>
+              </p>
+            </div>
+          )}
+
           {result ? (
             <section className="space-y-4">
               <div className="space-y-2">
